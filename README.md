@@ -4,7 +4,6 @@ This repository contains the scripts needed to run
 the testing the dynamic window implementation 
 of RMLStreamer against Flink's native window implementation. 
 
-
 ## 1) Kafka services 
 
  This script will setup the kafka brokers in docker 
@@ -29,3 +28,15 @@ to stop the kafka brokers and flink servers.
 ```bash
 ./stop-eval-script.sh
 ```
+
+
+
+## Reading from the Kafka broker 
+
+To read a particular topic from the kafka broker just run the 
+following script: 
+
+```bash 
+./read-from-topic.sh  [topic] #by default reads from "metrics" 
+```
+

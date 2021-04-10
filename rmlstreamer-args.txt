@@ -1,0 +1,1 @@
+toFile --mapping-file /mnt/data/dynamic_join_mapping.ttl --output-path /mnt/data/output.nt

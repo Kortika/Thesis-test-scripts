@@ -1,2 +1,0 @@
-ndwspeed: {"internalId": "lane1", "lat":51.41268,"long":5.42929,"speed":92,"accuracy":100,"timestamp":"2021-04-01 17:58:10","num_lanes":1}
-ndwflow: {"internalId": "lane1", "lat":51.41268,"long":5.42929,"flow":360,"period":60,"accuracy":100,"timestamp":"2021-04-01 17:52:22","num_lanes":1}
