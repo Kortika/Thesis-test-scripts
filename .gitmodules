@@ -1,0 +1,3 @@
+[submodule "open-stream-processing-benchmark"]
+	path = include/open-stream-processing-benchmark 
+	url = git@github.com:Klarrio/open-stream-processing-benchmark.git
