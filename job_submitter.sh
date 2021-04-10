@@ -8,11 +8,15 @@ __ScriptVersion="0.0.1"
 #===============================================================================
 function usage ()
 {
-    echo "Usage :  $0 [options] [--]
+    echo "Usage :  $0 -m mappfile -o outputPath [options] [--]
+
+    Required: 
+    -m|mapping-file     Location of mapping file in the jobmanager's container 
+    -o|output-path      Location of the output file/folder in the jobmanager's container
 
     Options:
-    -h|help       Display this message
-    -v|version    Display script version"
+    -h|help             Display this message
+    -v|version          Display script version"
 
 }    # ----------  end of function usage  ----------
 
@@ -24,7 +28,7 @@ while getopts ":hvm:o:" opt
 do
   case $opt in
     m|mapping-file ) 
-        MAPPING_FILE_CONAINER_PATH=$OPTARG ;; 
+        MAPPING_FILE_CONTAINER_PATH=$OPTARG ;; 
     o|output-path ) 
         OUTPUT_PATH=$OPTARG ;; 
 
@@ -43,10 +47,12 @@ do
 done
 shift $(($OPTIND-1))
 
+${MAPPING_FILE_CONTAINER_PATH:?Missing mapping file -m}
+${OUTPUT_PATH:?Missing output path -o}
 
 JOB_CLASS_NAME="io.rml.framework.Main"
 JM_CONTAINER=$(docker ps --filter name=jobmanager --format={{.ID}})
 
 docker cp resources/RMLStreamer-2.0.1-SNAPSHOT.jar  "${JM_CONTAINER}":/job.jar
-docker exec -t -i "${JM_CONTAINER}" flink run -d -c ${JOB_CLASS_NAME} /job.jar toFile --mapping-file $MAPPING_FILE_CONAINER_PATH --output-path $OUTPUT_PATH  
+docker exec -t -i "${JM_CONTAINER}" flink run -d -c ${JOB_CLASS_NAME} /job.jar toFile --mapping-file $MAPPING_FILE_CONTAINER_PATH --output-path $OUTPUT_PATH  
 
