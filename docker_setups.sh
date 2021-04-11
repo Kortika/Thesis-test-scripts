@@ -71,12 +71,13 @@ shift $(($OPTIND-1))
 IP_ADDR=$(hostname -I | head -n1 | awk '{print $1}')
 ENV_FILE="resources/.custom_env" 
 echo "IP_ADDR=$IP_ADDR" > $ENV_FILE
+divider 
 
 trap cleanup SIGHUP SIGINT SIGTERM
 
-divider 
 echo "Starting up necessary docker containers for Kafka and Flink..." 
 divider 
+
 docker-compose --env-file $ENV_FILE up -d 
 divider 
 
