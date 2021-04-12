@@ -36,8 +36,7 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
   ];
 
   rr:subjectMap [
-    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&accuracy={accuracy}&timestamp={timestamp}" ;
-    rr:class <http://example.com/ontology/Speed>
+    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&accuracy={accuracy}&timestamp={timestamp}"
   ];
 
   
@@ -65,8 +64,6 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
 
 
   rr:subjectMap [
-    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&flow={flow}&period={period}&accuracy={accuracy}&timestamp={timestamp}";
-    rr:class <http://example.com/ontology/Flow>;
-    rr:graph <http://example.com/graph/flow> ;
+    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&flow={flow}&period={period}&accuracy={accuracy}&timestamp={timestamp}"
   ]. 
   
