@@ -48,8 +48,8 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
       rmls:joinConfig <JoinConfigMap>;
       rmls:windowType  rmls:VCTWindow;
       rr:joinCondition [
-        rr:child "internalId,lat,long" ;
-        rr:parent "internalId,lat,long" ;
+        rr:child "internalId,lat,long,timestamp" ;
+        rr:parent "internalId,lat,long,timestamp" ;
       ]
     ]
   ] .
