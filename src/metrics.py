@@ -35,6 +35,7 @@ async def calc_metrics(api_url, keys, file, interval=1, header=None):
             metrics_request = requests.get(url=api_url, params=metrics_param)
             metric_response = metrics_request.json()
 
+
             if count == 0:
                 if header is None:
                     header = toCSVHeader(metric_response)
@@ -48,7 +49,6 @@ async def calc_metrics(api_url, keys, file, interval=1, header=None):
 
 def get_vertex_id_name(url, pattern="Window"):
     response = requests.get(url=url).json()
-    print(url)
 
     for vertex in response["vertices"]:
         if pattern in vertex["name"]:
@@ -88,6 +88,12 @@ def run_async_loop(aysnc_calls: list, time_seconds: int = 20):
         pass
 
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
@@ -96,10 +102,10 @@ if __name__ == "__main__":
                         required=False,
                         help='Interval in seconds to gather the metrics from api. ')
     parser.add_argument('-output', type=str, required=True,
-                help="Key of the  output file where [output]_subtasks.csv and [output]_mcl.csv will be generated.")
+                        help="Key of the  output file where [output]_subtasks.csv and [output]_mcl.csv will be generated.")
 
     parser.add_argument('--isTest', type=bool, default=False, required=False,
-                help="Bool flag to check if metrics should be run in test mode.")
+                        help="Bool flag to check if metrics should be run in test mode.")
 
     parser.add_argument('maxTimeSeconds', type=int, help='Maximum time to gather the metrics (should stabilise after a while)') 
 
@@ -129,10 +135,19 @@ if __name__ == "__main__":
     latency_metrics_url = f"{BASE_URL}/jobs/{jobid}/metrics"
     latency_metrics_keys = ','.join(get_metrics_id(latency_metrics_url, f"{vertexid}"))
     
-    
     async_calls = []
-    async_calls.append(calc_metrics(latency_metrics_url, latency_metrics_keys,
-                       f"{args.output}_latencies.csv", args.interval))
+    if len(latency_metrics_keys.split(',')) > 20: 
+        latency_metrics_keys = latency_metrics_keys.split(',') 
+        count = 0 
+        for chunk in chunks(latency_metrics_keys, 10): 
+            async_calls.append(calc_metrics(latency_metrics_url, ','.join(chunk),
+                                            f"{args.output}_latencies_{count}.csv", args.interval))
+            count += 1
+
+    else:   
+        async_calls.append(calc_metrics(latency_metrics_url, latency_metrics_keys,
+                           f"{args.output}_latencies.csv", args.interval))
+
     async_calls.append(calc_metrics(
         subtask_metrics_url, subtask_metrics_keys, f"{args.output}_subtasks.csv", args.interval))
     async_calls.append(calc_metrics(jobmanager_metrics_url,
