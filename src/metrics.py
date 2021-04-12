@@ -24,7 +24,7 @@ def toCSVRow(json_arr) -> list:
     return values
 
 
-async def calc_metrics(api_url, keys, file):
+async def calc_metrics(api_url, keys, file, interval=1):
     count = 0
     metrics_param = {"get": keys}
     with open(file, "w") as f:
@@ -40,7 +40,7 @@ async def calc_metrics(api_url, keys, file):
                 count += 1
 
             writer.writerow(toCSVRow(metric_response))
-            await asyncio.sleep(1)
+            await asyncio.sleep(interval)
 
 def get_vertex_id_name(url, pattern="Window"): 
     response = requests.get(url=url).json() 
@@ -70,8 +70,7 @@ def get_metrics_id(url, pattern):
     
     return result
             
-
-def run_async_loop(aysnc_calls, time_seconds=20): 
+def run_async_loop(aysnc_calls:list, time_seconds:int=20): 
     loop=asyncio.get_event_loop()
     for cal in async_calls: 
         task = loop.create_task(cal)
@@ -114,8 +113,9 @@ if __name__ == "__main__":
             ])
     async_calls = []
 
-    async_calls.append(calc_metrics(subtask_metrics_url, subtask_metrics_keys, f"{args.output}_subtasks.csv")) 
-    async_calls.append(calc_metrics(jobmanager_metrics_url, jobmanager_metrics_keys, f"{args.output}_job.csv"))
+    async_calls.append(calc_metrics(subtask_metrics_url, subtask_metrics_keys, f"{args.output}_subtasks.csv", args.interval)) 
+    async_calls.append(calc_metrics(jobmanager_metrics_url, jobmanager_metrics_keys, f"{args.output}_job.csv", args.interval))
+
 
     run_async_loop(async_calls)
 
