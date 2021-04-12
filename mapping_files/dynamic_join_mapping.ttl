@@ -36,7 +36,7 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
   ];
 
   rr:subjectMap [
-    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&flow={flow}&accuracy={accuracy}&timestamp={timestamp}" ;
+    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&accuracy={accuracy}&timestamp={timestamp}" ;
     rr:class <http://example.com/ontology/Speed>
   ];
 
@@ -44,7 +44,6 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
   rr:predicateObjectMap [
     rr:predicate <http://example.com/ontology/laneFlow> ;
     rr:objectMap [
-      a rr:RefObjectMap ;
       rr:parentTriplesMap <NDWFlowMap>;
       rmls:joinConfig <JoinConfigMap>;
       rmls:windowType  rmls:VCTWindow;

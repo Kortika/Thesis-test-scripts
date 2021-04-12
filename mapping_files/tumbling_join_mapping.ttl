@@ -13,17 +13,17 @@
 _:kafka_source_ndwSpeed a rmls:KafkaStream ;
              rmls:broker "192.168.0.237:9092";
              rmls:groupId "1";
-             rmls:topic "ndwSpeed".
+             rmls:topic "ndwspeed".
 
 _:kafka_source_ndwFlow a rmls:KafkaStream ; 
             rmls:broker "192.168.0.237:9092"; 
             rmls:groupId "1"; 
-            rmls:topic "ndwFlow". 
+            rmls:topic "ndwflow". 
 
 
 
 <JoinConfigMap> a rmls:JoinConfigMap;
-        rmls:joinType rmls:TumblingWindowJoin;
+        rmls:joinType rmls:TumblingWindowJoin.
 
 
 <NDWSpeedMap>
@@ -31,19 +31,18 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
 
   rml:logicalSource [
     rml:source _:kafka_source_ndwSpeed;
-    rml:referenceFormulation ql:JSONPath:
+    rml:referenceFormulation ql:JSONPath;
     rml:iterator "$"
   ];
 
   rr:subjectMap [
-    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&flow={flow}&accuracy={accuracy}&timestamp={timestamp}" ;
+    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&accuracy={accuracy}&timestamp={timestamp}" ;
     rr:class <http://example.com/ontology/Speed>
   ];
 
   rr:predicateObjectMap [
     rr:predicate <http://example.com/ontology/laneFlow> ;
     rr:objectMap [
-      a rr:RefObjectMap ;
       rr:parentTriplesMap <NDWFlowMap>;
       rmls:joinConfig <JoinConfigMap>;
       rmls:windowType  rmls:Tumbling;
@@ -58,7 +57,7 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
   a rr:TriplesMap;
   rml:logicalSource [
     rml:source _:kafka_source_ndwFlow;
-    rml:referenceFormulation ql:JSONPath:
+    rml:referenceFormulation ql:JSONPath;
     rml:iterator "$"
   ];
 
