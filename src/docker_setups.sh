@@ -81,3 +81,11 @@ divider
 docker-compose --env-file $ENV_FILE up -d 
 divider 
 
+echo "Changing permission (777) to the volume so that RMLStreamer can write the results to the output files" 
+divider 
+VOLUME_NAME=$(docker volume ls --format={{.Name}} | egrep "thesis") 
+VOLUME_HOST_PATH=$(docker volume inspect $VOLUME_NAME --format={{.Mountpoint}})
+echo "Found path: $VOLUME_HOST_PATH"
+sudo chmod -R 777 $VOLUME_HOST_PATH
+
+

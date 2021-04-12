@@ -42,6 +42,7 @@ async def calc_metrics(api_url, keys, file, interval=1, header=None):
                 count += 1
 
             writer.writerow(toCSVRow(metric_response))
+            f.flush()
             await asyncio.sleep(interval)
 
 
@@ -107,7 +108,7 @@ if __name__ == "__main__":
 
     URL = f"{BASE_URL}/jobs"
 
-    STATUS = "RUNNING" if args.isTest else "CANCELED"
+    STATUS = "CANCELED" if args.isTest else "RUNNING"
     jobid = get_job_id(URL, STATUS)
     URL = f"{URL}/{jobid}"
     vertexid, vertexname = get_vertex_id_name(URL)
