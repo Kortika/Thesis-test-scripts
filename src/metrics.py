@@ -35,7 +35,6 @@ async def calc_metrics(api_url, keys, file, interval=1, header=None):
             metrics_request = requests.get(url=api_url, params=metrics_param)
             metric_response = metrics_request.json()
 
-
             if count == 0:
                 if header is None:
                     header = toCSVHeader(metric_response)
@@ -101,13 +100,14 @@ if __name__ == "__main__":
     parser.add_argument('--interval', type=int, default=1,
                         required=False,
                         help='Interval in seconds to gather the metrics from api. ')
-    parser.add_argument('output', type=str, 
+    parser.add_argument('output', type=str,
                         help="Key of the  output file where [output]_subtasks.csv and [output]_mcl.csv will be generated.")
 
     parser.add_argument('--isTest', type=bool, default=False, required=False,
                         help="Bool flag to check if metrics should be run in test mode.")
 
-    parser.add_argument('maxTimeSeconds', type=int, help='Maximum time to gather the metrics (should stabilise after a while)') 
+    parser.add_argument('maxTimeSeconds', type=int,
+                        help='Maximum time to gather the metrics (should stabilise after a while)')
 
     args = parser.parse_args()
     BASE_URL = "http://localhost:8081/v1"
@@ -126,34 +126,35 @@ if __name__ == "__main__":
 
     taskmanagers_metrics_url = f"{BASE_URL}/taskmanagers/metrics"
     taskmanagers_metrics_keys = ','.join([
-            "Status.JVM.CPU.Load",
-            "Status.JVM.Memory.Heap.Used",
-            "Status.JVM.Memory.Heap.Committed",
-            "Status.JVM.Memory.Heap.Max", 
-            "Status.JVM.Memory.NonHeap.Used",
-            "Status.JVM.Memory.NonHeap.Committed",
-            "Status.JVM.Memory.NonHeap.Max"
-        ])
+        "Status.JVM.CPU.Load",
+        "Status.JVM.Memory.Heap.Used",
+        "Status.JVM.Memory.Heap.Committed",
+        "Status.JVM.Memory.Heap.Max",
+        "Status.JVM.Memory.NonHeap.Used",
+        "Status.JVM.Memory.NonHeap.Committed",
+        "Status.JVM.Memory.NonHeap.Max"
+    ])
 
     latency_metrics_url = f"{BASE_URL}/jobs/{jobid}/metrics"
-    latency_metrics_keys = ','.join(get_metrics_id(latency_metrics_url, f"{vertexid}"))
-    
+    latency_metrics_keys = ','.join(
+        get_metrics_id(latency_metrics_url, f"{vertexid}"))
+
     async_calls = []
-    if len(latency_metrics_keys.split(',')) > 20: 
-        latency_metrics_keys = latency_metrics_keys.split(',') 
-        count = 0 
-        for chunk in chunks(latency_metrics_keys, 10): 
+    if len(latency_metrics_keys.split(',')) > 20:
+        latency_metrics_keys = latency_metrics_keys.split(',')
+        count = 0
+        for chunk in chunks(latency_metrics_keys, 10):
             async_calls.append(calc_metrics(latency_metrics_url, ','.join(chunk),
                                             f"{args.output}_latencies_{count}.csv", args.interval))
             count += 1
 
-    else:   
+    else:
         async_calls.append(calc_metrics(latency_metrics_url, latency_metrics_keys,
                            f"{args.output}_latencies.csv", args.interval))
 
     async_calls.append(calc_metrics(
         subtask_metrics_url, subtask_metrics_keys, f"{args.output}_subtasks.csv", args.interval))
     async_calls.append(calc_metrics(taskmanagers_metrics_url,
-                       taskmanagers_metrics_keys, f"{args.output}_job.csv", args.interval))
+                       taskmanagers_metrics_keys, f"{args.output}_taskmanager.csv", args.interval))
 
     run_async_loop(async_calls, args.maxTimeSeconds)
