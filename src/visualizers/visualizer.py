@@ -1,39 +1,37 @@
-import pandas as pd 
-import re
-import argparse 
+#!/usr/bin/python3
+import argparse
+from pathlib import Path
+
 import matplotlib as plt
 
-
-class DFConsolidator(object):
-
-    """Consolidates dataframes if spreaded out in multiple files"""
-
-    def __init__(self, files:list):
-        self._frames = [] 
-        for f in files: 
-            df = pd.read_csv(f)
-            self._frames.append(df)
-
-        self._files = files
-    
-    def clean_headers(self): 
-        pass
+import src.visualizers.metric_parser as m_parser
 
 
-class LatencyDFs(DFConsolidator):
+def plot_boxplot():
+    pass
 
-    def clean_headers(self): 
-        for df in self._frames: 
-            headers = [re.search("(subtask_index.*)" ,x).group(1) for x in df.columns] 
-            df.columns = headers
 
-        
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="Script to parse all the gathered csv \
+        metrics into pandas dataframes")
 
-def main():
-    files = ["src/resources/dynamic_constant/dynamic_latencies_0.csv"]
-    consol = LatencyDFs(files)
-    consol.clean_headers()
-    print(consol._frames) 
+    parser.add_argument(
+        "metrics_dir", type=str,
+        help="Directory containing the csv files of the metrics")
 
-if __name__ == "__main__":
-    main()
+    parser.add_argument(
+        "output_dir", type=str,
+        help="Directory to which the visualized metrics will be outputted")
+
+    args = parser.parse_args()
+
+    dir_path = Path(args.metrics_dir)
+    if not dir_path.exists():
+        print(f"Directory does not exists: ${args.metrics_dir}")
+        exit()
+
+    (latency, task, vertex) = m_parser.get_consolidated_dataframes(dir_path)
+    df = latency.get_columns(subtask=0, metric="p99")
+
+    pass
