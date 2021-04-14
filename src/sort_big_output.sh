@@ -42,11 +42,26 @@ if [[ ! -d "$DIR" ]]; then
     echo "Given directory of benchmark csv files doesn't exists: $DIR" 
     exit 1
 fi
+sort_file(){
+    local file=$1
+    local sortedDir=$2
 
-
-for file in "$DIR/*.csv"; 
-do 
     echo "Sorting $file..."
-    sort -o $file $file 
+    sort -o "${sortedDir}${file##*/}_sorted"  $file
+}
+
+N=10
+SORTED_DIR="${DIR}/sorted/"
+mkdir -p $SORTED_DIR 
+
+(
+for file in ${DIR}*.csv ; do
+    ((i=i%N)); ((i++==0)) && wait
+    sort_file $file $SORTED_DIR &
 done
-sort -m *.csv > final_output.csv  
+)
+wait
+sleep 5
+echo "Done sorting sub files" 
+sort -m ${SORTED_DIR}*_sorted > final_output.csv  
+
