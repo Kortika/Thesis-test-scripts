@@ -135,9 +135,9 @@ if __name__ == "__main__":
         "Status.JVM.Memory.NonHeap.Max"
     ])
 
-    latency_metrics_url = f"{BASE_URL}/jobs/{jobid}/metrics"
+    latency_metrics_url = f"{URL}/vertices/{vertexid}/subtasks/metrics"
     latency_metrics_keys = ','.join(
-        get_metrics_id(latency_metrics_url, f"{vertexid}"))
+        get_metrics_id(latency_metrics_url, "Latency"))
 
     async_calls = []
     if len(latency_metrics_keys.split(',')) > 20:
