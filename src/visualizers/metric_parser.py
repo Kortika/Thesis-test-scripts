@@ -46,14 +46,13 @@ class DFConsolidator(ABC):
 
 class LatencyDFs(DFConsolidator):
     def __init__(self, files: List[Path]):
-        super().__init__(files, regex="(subtask_index.*)")
+        super().__init__(files, regex="\\.(.*?)$")
 
     def get_columns(self, **kwargs) -> DataFrame:
 
         metric = kwargs["metric"]
-        subtask = kwargs["subtask"]
         return self._big_frame.filter(
-            regex=f"subtask_index\\.{subtask}.*{metric}_",
+            regex=f"{metric}",
             axis=1)
 
 
@@ -110,4 +109,8 @@ if __name__ == "__main__":
         print(f"Directory does not exists: ${args.metrics_dir}")
         exit()
 
-    get_consolidated_dataframes(dir_path)
+    (lat, task, vert) = get_consolidated_dataframes(dir_path)
+
+    print(vert._big_frame.columns)
+    print(lat._big_frame.columns)
+    print(task._big_frame.columns)
