@@ -139,6 +139,10 @@ if __name__ == "__main__":
     latency_metrics_keys = ','.join(
         get_metrics_id(latency_metrics_url, "Latency"))
 
+    print(get_metrics_id(latency_metrics_url, "Latency"))
+    print(get_metrics_id(taskmanagers_metrics_url, "Status"))
+    print(get_metrics_id(subtask_metrics_url, "Window"))
+
     async_calls = []
     if len(latency_metrics_keys.split(',')) > 20:
         latency_metrics_keys = latency_metrics_keys.split(',')

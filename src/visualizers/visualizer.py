@@ -155,12 +155,13 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
     tumb_vert_avg = tumb_vert.get_columns(metric="RecordsOutPerSecond_avg")
 
     throughput_df = pd.concat([dyn_out_avg, tumb_vert_avg], axis=1)
+    throughput_df = throughput_df.fillna(0)
 
     throughput_df.columns = ["VCTWindow", "TumblingWindow"]
 
     ax = plt.subplot(111)
     ax = draw_lineplot(throughput_df,
-                       np.arange(0, dyn_out_avg.shape[0]),
+                       np.arange(0, throughput_df.shape[0]),
                        f"Data stream with {test_type} rate",
                        ylabel="Throughput (records/s)",
                        xlabel="Time period (s)",
