@@ -1,0 +1,52 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix ex: <http://example.com/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix rmls: <http://semweb.mmlab.be/ns/rmls#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix activity: <http://example.com/activity/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix schema: <https://schema.org/>. 
+@base <http://example.com/base/> .
+
+
+<NDWSpeedMap>
+  a rr:TriplesMap;
+
+  rml:logicalSource [
+    rml:source "ndwspeed.json" ;
+    rml:referenceFormulation ql:JSONPath; 
+    rml:iterator "$.*"
+  ];
+
+  rr:subjectMap [
+    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&speed={speed}&accuracy={accuracy}&timestamp={timestamp}"
+  ];
+
+  
+  rr:predicateObjectMap [
+    rr:predicate <http://example.com/ontology/laneFlow> ;
+    rr:objectMap [
+      rr:parentTriplesMap <NDWFlowMap>;
+      rr:joinCondition [
+        rr:child "internalId,lat,long,timestamp" ;
+        rr:parent "internalId,lat,long,timestamp" ;
+      ]
+    ]
+  ] .
+
+<NDWFlowMap>
+  a rr:TriplesMap;
+  rml:logicalSource [
+    rml:source "ndwflow.json";
+    rml:referenceFormulation ql:JSONPath;
+    rml:iterator "$.*"
+  ];
+
+
+
+  rr:subjectMap [
+    rr:template "http://example.com/resource/{internalId}?lat={lat}&long={long}&flow={flow}&period={period}&accuracy={accuracy}&timestamp={timestamp}"
+  ]. 
+  
