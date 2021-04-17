@@ -51,7 +51,7 @@ sort_file(){
 }
 
 N=10
-SORTED_DIR="${DIR}/sorted/"
+SORTED_DIR="${DIR}sorted/"
 mkdir -p $SORTED_DIR 
 
 (
@@ -63,5 +63,5 @@ done
 wait
 sleep 5
 echo "Done sorting sub files" 
-sort -m ${SORTED_DIR}*_sorted > ${DIR##*/}final_output.csv  
+sort -m ${SORTED_DIR}*_sorted > final_output.csv  
 
