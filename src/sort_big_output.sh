@@ -63,5 +63,6 @@ done
 wait
 sleep 5
 echo "Done sorting sub files" 
+echo "Merging files in ${SORTED_DIR}"
 sort -m ${SORTED_DIR}*_sorted > final_output.csv  
 

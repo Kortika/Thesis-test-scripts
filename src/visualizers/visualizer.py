@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+
+from scipy.interpolate import make_interp_spline, BSpline
 import src.visualizers.error as err
 import src.visualizers.metric_parser as m_parser
 plt.style.use("ggplot")
@@ -71,19 +73,34 @@ def draw_boxplot_ax(data: pd.DataFrame,
     ax.set_ylabel(ylabel)
 
 
-def draw_lineplot(used_avg_df: pd.DataFrame,
+def draw_lineplot(df: pd.DataFrame,
                   x: List[Any],
                   title: str,
                   xlabel: str,
                   ylabel: str,
-                  ax: Axes):
+                  ax: Axes,
+                  ):
 
-    ax.plot(x, used_avg_df)
+    ax.plot(x, df)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     ax.set_title(title)
-    ax.legend(used_avg_df.columns)
+    ax.legend(df.columns)
     return ax
+
+
+def interpolate(df):
+    filler_val = df.min()
+    df = df.rolling(30).mean().fillna(filler_val)
+    df = df.iloc[::4, :]
+
+    new_y = df
+    x = np.arange(0, df.shape[0])
+    new_x = np.linspace(min(x), max(x), 300)
+    spline = make_interp_spline(x, df, k=5)
+    new_y = spline(new_x)
+
+    return pd.DataFrame(new_y, columns=df.columns)
 
 
 def visualize_latency(dyn_latency: m_parser.DFConsolidator,
@@ -178,32 +195,57 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
                         output_dir: Path,
                         test_type: str):
 
-    used_avg_df = dyn_task.get_columns(metric="Used_avg")
+    dyna_used_avg_df = dyn_task.get_columns(metric="Used_avg")
 
-    used_avg_df = used_avg_df.apply(
+    dyna_used_avg_df = dyna_used_avg_df.apply(
         lambda row: [format_bytes(x) for x in row])
-    ax = plt.subplot(111)
-    ax = draw_lineplot(used_avg_df,
-                       np.arange(0, used_avg_df.shape[0]),
-                       f"Datastream with {test_type} rate",
-                       ylabel="Memory (MB)",
-                       xlabel="Time period (s)",
-                       ax=ax)
-    plt.savefig(output_dir.joinpath("mem_usage_dynamic.png"))
-
-    plt.close()
 
     tumb_used_avg_df = tumb_task.get_columns(metric="Used_avg")
 
     tumb_used_avg_df = tumb_used_avg_df.apply(
         lambda row: [format_bytes(x) for x in row])
+
+    dyna_col_df = interpolate(dyna_used_avg_df.filter(regex="\.Heap"))
+    tumb_col_df = interpolate(tumb_used_avg_df.filter(regex="\.Heap"))
+    dyna_col_df.columns = ["VCTWindow's heap"]
+    tumb_col_df.columns = ["Tumbling's heap"]
+
+    merged_df = pd.concat([dyna_col_df,
+                           tumb_col_df], axis=1)
+
+    ax = plt.subplot(111)
+    ax = draw_lineplot(merged_df,
+                       np.arange(0, merged_df.shape[0]),
+                       f"Datastream with {test_type} rate",
+                       ylabel="Memory (MB)",
+                       xlabel="Time",
+                       ax=ax,
+                       )
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath("mem_comparison.png"))
+
+    plt.close()
+
+    ax = plt.subplot(111)
+    ax = draw_lineplot(dyna_used_avg_df,
+                       np.arange(0, dyna_used_avg_df.shape[0]),
+                       f"Datastream with {test_type} rate",
+                       ylabel="Memory (MB)",
+                       xlabel="Time period (s)",
+                       ax=ax,
+                       )
+    plt.savefig(output_dir.joinpath("mem_usage_dynamic.png"))
+
+    plt.close()
+
     ax = plt.subplot(111)
     ax = draw_lineplot(tumb_used_avg_df,
                        np.arange(0, tumb_used_avg_df.shape[0]),
                        f"Datastream with {test_type} rate",
                        ylabel="Memory (MB)",
                        xlabel="Time period (s)",
-                       ax=ax)
+                       ax=ax,
+                       )
 
     plt.savefig(output_dir.joinpath("mem_usage_tumb.png"))
     plt.close()
