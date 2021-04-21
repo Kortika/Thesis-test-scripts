@@ -126,6 +126,7 @@ if __name__ == "__main__":
 
     taskmanagers_metrics_url = f"{BASE_URL}/taskmanagers/metrics"
     taskmanagers_metrics_keys = ','.join([
+        "Status.JVM.GarbageCollector.G1_Young_Generation.Count",
         "Status.JVM.CPU.Load",
         "Status.JVM.Memory.Heap.Used",
         "Status.JVM.Memory.Heap.Committed",
