@@ -79,9 +79,10 @@ def draw_lineplot(df: pd.DataFrame,
                   xlabel: str,
                   ylabel: str,
                   ax: Axes,
+                  color: List[str] = None,
                   ):
 
-    ax.plot(x, df)
+    ax.plot(x, df, color=color)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     ax.set_title(title)
@@ -89,18 +90,54 @@ def draw_lineplot(df: pd.DataFrame,
     return ax
 
 
-def interpolate(df):
+def interpolate(df, window_size: int = 80, k=7, nr_points=100):
     filler_val = df.min()
-    df = df.rolling(30).mean().fillna(filler_val)
-    df = df.iloc[::4, :]
+    df = df.rolling(window_size).mean().fillna(filler_val)
 
     new_y = df
     x = np.arange(0, df.shape[0])
-    new_x = np.linspace(min(x), max(x), 300)
-    spline = make_interp_spline(x, df, k=5)
+    new_x = np.linspace(min(x), max(x), nr_points)
+    spline = make_interp_spline(x, df, k=k)
     new_y = spline(new_x)
 
     return pd.DataFrame(new_y, columns=df.columns)
+
+
+def draw_barchart(df: pd.DataFrame,
+                  x: List[Any],
+                  title: str,
+                  xlabel: str,
+                  ylabel: str,
+                  ax: Axes,
+                  color: List[str] = None
+                  ):
+
+    print(df)
+    ax.bar(x, df.squeeze(), align="center", color=color)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_title(title)
+    ax.legend(df.columns)
+    return ax
+
+
+def interpolate_df(df, nr_points=100):
+
+    new_cols = [" ".join(x.split(".")[-2:]) for x in df.columns]
+    new_cols = [x.split("_")[0] for x in new_cols]
+
+    print(new_cols)
+    df.columns = new_cols
+    df_list = list()
+    for col in df.columns:
+
+        df_list.append(interpolate(df[col].to_frame(), nr_points=nr_points))
+
+    new_df = pd.concat(df_list, axis=1)
+
+    print(new_df)
+
+    return new_df
 
 
 def visualize_latency(dyn_latency: m_parser.DFConsolidator,
@@ -121,7 +158,7 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     draw_boxplot_ax(dyn_df,
                     [""],
-                    f"Data stream with {test_type} rate",
+                    f"Latency distribution for datastream with {test_type} rate",
                     "VCTWindow",
                     "Latencies (ms)",
                     ax=ax)
@@ -131,18 +168,19 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     draw_boxplot_ax(tumb_df,
                     [""],
-                    f"Data stream with {test_type} rate",
+                    f"Latency distribution for datastream with {test_type} rate",
                     "TumblingWindow",
                     "Latencies (ms)",
                     ax=ax)
     plt.savefig(output_dir.joinpath("TumblingWindow_latency_boxplot.png"))
     plt.close()
 
+    nr_points = 500
     # Line latency plotting
     ax = plt.subplot(111)
-    draw_lineplot(dyn_df,
-                  np.arange(0, dyn_df.shape[0]),
-                  f"Data stream with {test_type} rate",
+    draw_lineplot(interpolate_df(dyn_df.copy(), nr_points),
+                  np.arange(0, nr_points),
+                  f"Latency for datastream with {test_type} rate",
                   ylabel="Latency (ms)",
                   xlabel="Time period (s)",
                   ax=ax)
@@ -151,9 +189,9 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     plt.close()
 
     ax = plt.subplot(111)
-    draw_lineplot(tumb_df,
-                  np.arange(0, tumb_df.shape[0]),
-                  f"Data stream with {test_type} rate",
+    draw_lineplot(interpolate_df(tumb_df.copy(), nr_points),
+                  np.arange(0, nr_points),
+                  f"Latency for datastream with {test_type} rate",
                   ylabel="Latency (ms)",
                   xlabel="Time period (s)",
                   ax=ax)
@@ -196,19 +234,61 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
                         test_type: str):
 
     dyna_used_avg_df = dyn_task.get_columns(metric="Used_avg")
-
     dyna_used_avg_df = dyna_used_avg_df.apply(
         lambda row: [format_bytes(x) for x in row])
 
     tumb_used_avg_df = tumb_task.get_columns(metric="Used_avg")
-
     tumb_used_avg_df = tumb_used_avg_df.apply(
         lambda row: [format_bytes(x) for x in row])
 
-    dyna_col_df = interpolate(dyna_used_avg_df.filter(regex="\.Heap"))
-    tumb_col_df = interpolate(tumb_used_avg_df.filter(regex="\.Heap"))
+    dyna_used_avg_df = interpolate_df(dyna_used_avg_df)
+    tumb_used_avg_df = interpolate_df(tumb_used_avg_df)
+
+    dyna_col_df = dyna_used_avg_df.filter(regex="^Heap")
+    tumb_col_df = tumb_used_avg_df.filter(regex="^Heap")
     dyna_col_df.columns = ["VCTWindow's heap"]
     tumb_col_df.columns = ["Tumbling's heap"]
+
+    diff_df = pd.DataFrame(
+        {"Dynamic mem - Tumbling mem": np.arange(0, dyna_col_df.shape[0])})
+    diff_df[diff_df.columns[0]] = dyna_col_df[dyna_col_df.columns[0]
+                                              ] - tumb_col_df[tumb_col_df.columns[0]]
+
+    ax = plt.subplot(111)
+    diff_x = np.arange(0, diff_df.shape[0])
+    diff_col = diff_df.columns[0]
+    ax = draw_barchart(diff_df,
+                       diff_x,
+                       f"Difference in memory usage",
+                       ylabel="Memory difference (MB)",
+                       xlabel="Time",
+                       ax=ax,
+                       )
+    neg_avg = diff_df[diff_df[diff_col] < 0]
+    neg_avg = neg_avg.sum()/neg_avg.shape[0]
+
+    pos_avg = diff_df[diff_df[diff_col] > 0]
+
+    pos_avg = pos_avg.sum()/pos_avg.shape[0]
+
+    ax.hlines([neg_avg, pos_avg], 0, max(diff_x),
+              colors=["green", "steelblue"])
+
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath("mem_difference_bar.png"))
+    plt.close()
+
+    ax = plt.subplot(111)
+    ax = draw_lineplot(diff_df,
+                       np.arange(0, diff_df.shape[0]),
+                       title=f"Difference in memory usage",
+                       ylabel="Memory difference (MB)",
+                       xlabel="Time",
+                       ax=ax,
+                       )
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath("mem_difference_lineplot.png"))
+    plt.close()
 
     merged_df = pd.concat([dyna_col_df,
                            tumb_col_df], axis=1)
@@ -216,7 +296,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     ax = draw_lineplot(merged_df,
                        np.arange(0, merged_df.shape[0]),
-                       f"Datastream with {test_type} rate",
+                       f"Memory usage on datastream with {test_type} rate",
                        ylabel="Memory (MB)",
                        xlabel="Time",
                        ax=ax,
@@ -229,11 +309,12 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     ax = draw_lineplot(dyna_used_avg_df,
                        np.arange(0, dyna_used_avg_df.shape[0]),
-                       f"Datastream with {test_type} rate",
+                       f"Memory usage on datastream with {test_type} rate",
                        ylabel="Memory (MB)",
                        xlabel="Time period (s)",
                        ax=ax,
                        )
+    ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath("mem_usage_dynamic.png"))
 
     plt.close()
@@ -241,12 +322,13 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     ax = draw_lineplot(tumb_used_avg_df,
                        np.arange(0, tumb_used_avg_df.shape[0]),
-                       f"Datastream with {test_type} rate",
+                       f"Memory usage on datastream with {test_type} rate",
                        ylabel="Memory (MB)",
                        xlabel="Time period (s)",
                        ax=ax,
                        )
 
+    ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath("mem_usage_tumb.png"))
     plt.close()
 
@@ -258,7 +340,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     ax = draw_lineplot(cpu_df,
                        np.arange(0, cpu_df.shape[0]),
-                       f"Datastream with {test_type} rate",
+                       f"CPU usage on datastream with {test_type} rate",
                        ylabel="CPU (percentage)",
                        xlabel="Time period (s)",
                        ax=ax)
