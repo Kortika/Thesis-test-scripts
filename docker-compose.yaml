@@ -35,7 +35,6 @@ services:
     environment:
       - |
         FLINK_PROPERTIES=
-        state.backend: hashmap
         parallelism.default: 4
         metrics.latency.granularity: single 
         jobmanager.rpc.address: jobmanager 
@@ -58,7 +57,6 @@ services:
     environment:
       - |
         FLINK_PROPERTIES=
-        state.backend: hashmap
         parallelism.default: 4
         metrics.latency.granularity: single 
         jobmanager.rpc.address: jobmanager 
