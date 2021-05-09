@@ -3,7 +3,8 @@ services:
   zookeeper: 
     image: jplock/zookeeper
     ports: 
-        - "2181:2182" 
+        - "2181:2182"
+    cpuset: "0-4"
   
   kafka: 
     image: wurstmeister/kafka:2.12-2.1.1 
@@ -21,6 +22,7 @@ services:
         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 
     volumes: 
         - /var/run/docker.sock:/var/run/docker.sock
+    cpuset: "0-4"
 
   
   jobmanager:
@@ -33,10 +35,13 @@ services:
     environment:
       - |
         FLINK_PROPERTIES=
+        state.backend: hashmap
+        parallelism.default: 4
         metrics.latency.granularity: single 
         jobmanager.rpc.address: jobmanager 
     volumes:
       - data:/mnt/data
+    cpuset: "5-6"
 
   
   
@@ -53,10 +58,13 @@ services:
     environment:
       - |
         FLINK_PROPERTIES=
+        state.backend: hashmap
+        parallelism.default: 4
         metrics.latency.granularity: single 
         jobmanager.rpc.address: jobmanager 
     volumes:
       - data:/mnt/data
+    cpuset: "7-11"
 
   
 volumes:
