@@ -146,7 +146,7 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     dyn_df = dyn_latency.get_columns(metric=metric)
     tumb_df = tumb_latency.get_columns(metric=metric)
 
-    dyn_df.columns = ["VCTWindow latency (ms)" for _ in dyn_df.columns]
+    dyn_df.columns = ["Dynamic Window latency (ms)" for _ in dyn_df.columns]
     tumb_df.columns = ["Tumbling latency (ms)" for _ in tumb_df.columns]
     # removing all zero values due to starting metric collection late
     dyn_df = dyn_df.loc[(dyn_df != 0).all(axis=1), :]
@@ -156,17 +156,17 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     draw_boxplot_ax(dyn_df,
                     [""],
                     "",
-                    "VCTWindow",
+                    "Dynamic Window",
                     "Latencies (ms)",
                     ax=ax)
-    plt.savefig(output_dir.joinpath("VCTWindow_latency_boxplot.png"))
+    plt.savefig(output_dir.joinpath("DynamicWindow_latency_boxplot.png"))
     plt.close()
 
     ax = plt.subplot(111)
     draw_boxplot_ax(tumb_df,
                     [""],
                     "",
-                    "TumblingWindow",
+                    "Tumbling Window",
                     "Latencies (ms)",
                     ax=ax)
     plt.savefig(output_dir.joinpath("TumblingWindow_latency_boxplot.png"))
@@ -184,7 +184,7 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
 
     ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath(
-        "VCTWindow_latency_lineplot.png"))
+        "DynamicWindow_latency_lineplot.png"))
     plt.close()
 
     ax = plt.subplot(111)
@@ -197,7 +197,7 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
 
     ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath(
-        "VCTWindow_latency_lineplot_interpolated.png"))
+        "DynamicWindow_latency_lineplot_interpolated.png"))
     plt.close()
 
     ax = plt.subplot(111)
@@ -240,7 +240,7 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
     throughput_df = throughput_df.fillna(0)
     throughput_df = throughput_df[100::]
 
-    throughput_df.columns = ["VCTWindow", "TumblingWindow"]
+    throughput_df.columns = ["Dynamic Window", "Tumbling Window"]
 
     ax = plt.subplot(111)
     ax = draw_lineplot(throughput_df,
@@ -274,7 +274,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
 
     dyna_col_df = dyna_used_avg_df.filter(regex="^Heap")
     tumb_col_df = tumb_used_avg_df.filter(regex="^Heap")
-    dyna_col_df.columns = ["VCTWindow's heap"]
+    dyna_col_df.columns = ["Dynamic Window's heap"]
     tumb_col_df.columns = ["Tumbling's heap"]
 
     diff_df = pd.DataFrame(
@@ -368,7 +368,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
     tumb_cpu_df = tumb_task.get_columns(metric="CPU.Load_avg")
 
     cpu_df = pd.concat([dyn_cpu_df, tumb_cpu_df], axis=1)
-    cpu_df.columns = ["VCTWindow", "Tumbling"]
+    cpu_df.columns = ["Dynamic Window", "Tumbling"]
     ax = plt.subplot(111)
     ax = draw_lineplot(cpu_df,
                        np.arange(0, cpu_df.shape[0]),
