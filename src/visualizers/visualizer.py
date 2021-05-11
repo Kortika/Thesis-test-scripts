@@ -109,15 +109,15 @@ def draw_barchart(df: pd.DataFrame,
                   xlabel: str,
                   ylabel: str,
                   ax: Axes,
-                  color: List[str] = None
+                  color: List[str] = None,
                   ):
 
-    print(df)
-    ax.bar(x, df.squeeze(), align="center", color=color)
+    ax.bar(x, df.squeeze(), align="center", color=color, label=df.columns[0])
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     ax.set_title(title)
-    ax.legend(df.columns)
+    ax.legend()
+
     return ax
 
 
@@ -126,7 +126,6 @@ def interpolate_df(df, nr_points=100):
     new_cols = [" ".join(x.split(".")[-2:]) for x in df.columns]
     new_cols = [x.split("_")[0] for x in new_cols]
 
-    print(new_cols)
     df.columns = new_cols
     df_list = list()
     for col in df.columns:
@@ -134,8 +133,6 @@ def interpolate_df(df, nr_points=100):
         df_list.append(interpolate(df[col].to_frame(), nr_points=nr_points))
 
     new_df = pd.concat(df_list, axis=1)
-
-    print(new_df)
 
     return new_df
 
@@ -158,7 +155,7 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     draw_boxplot_ax(dyn_df,
                     [""],
-                    f"Latency distribution for datastream with {test_type} rate",
+                    "",
                     "VCTWindow",
                     "Latencies (ms)",
                     ax=ax)
@@ -168,35 +165,65 @@ def visualize_latency(dyn_latency: m_parser.DFConsolidator,
     ax = plt.subplot(111)
     draw_boxplot_ax(tumb_df,
                     [""],
-                    f"Latency distribution for datastream with {test_type} rate",
+                    "",
                     "TumblingWindow",
                     "Latencies (ms)",
                     ax=ax)
     plt.savefig(output_dir.joinpath("TumblingWindow_latency_boxplot.png"))
     plt.close()
 
-    nr_points = 500
+    nr_points = 600
     # Line latency plotting
+    ax = plt.subplot(111)
+    draw_lineplot(dyn_df,
+                  np.arange(0, dyn_df.shape[0]),
+                  "",
+                  ylabel="Latency (ms)",
+                  xlabel="Time",
+                  ax=ax)
+
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath(
+        "VCTWindow_latency_lineplot.png"))
+    plt.close()
+
     ax = plt.subplot(111)
     draw_lineplot(interpolate_df(dyn_df.copy(), nr_points),
                   np.arange(0, nr_points),
-                  f"Latency for datastream with {test_type} rate",
+                  "",
                   ylabel="Latency (ms)",
-                  xlabel="Time period (s)",
+                  xlabel="Time",
                   ax=ax)
 
-    plt.savefig(output_dir.joinpath("VCTWindow_latency_lineplot.png"))
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath(
+        "VCTWindow_latency_lineplot_interpolated.png"))
+    plt.close()
+
+    ax = plt.subplot(111)
+    draw_lineplot(tumb_df,
+                  np.arange(0, tumb_df.shape[0]),
+                  "",
+                  ylabel="Latency (ms)",
+                  xlabel="Time",
+                  ax=ax)
+
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath(
+        "Tumbling_latency_lineplot.png"))
     plt.close()
 
     ax = plt.subplot(111)
     draw_lineplot(interpolate_df(tumb_df.copy(), nr_points),
                   np.arange(0, nr_points),
-                  f"Latency for datastream with {test_type} rate",
+                  "",
                   ylabel="Latency (ms)",
-                  xlabel="Time period (s)",
+                  xlabel="Time",
                   ax=ax)
 
-    plt.savefig(output_dir.joinpath("Tumbling_latency_lineplot.png"))
+    ax.set_xticklabels([])
+    plt.savefig(output_dir.joinpath(
+        "Tumbling_latency_lineplot_interpolated.png"))
     plt.close()
     pass
 
@@ -211,6 +238,7 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
 
     throughput_df = pd.concat([dyn_out_avg, tumb_vert_avg], axis=1)
     throughput_df = throughput_df.fillna(0)
+    throughput_df = throughput_df[100::]
 
     throughput_df.columns = ["VCTWindow", "TumblingWindow"]
 
@@ -219,7 +247,7 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
                        np.arange(0, throughput_df.shape[0]),
                        f"Data stream with {test_type} rate",
                        ylabel="Throughput (records/s)",
-                       xlabel="Time period (s)",
+                       xlabel="Time (s)",
                        ax=ax)
 
     plt.savefig(output_dir.joinpath("throughput_comparison.png"))
@@ -271,8 +299,12 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
 
     pos_avg = pos_avg.sum()/pos_avg.shape[0]
 
-    ax.hlines([neg_avg, pos_avg], 0, max(diff_x),
-              colors=["green", "steelblue"])
+    ax.hlines([neg_avg], 0, max(diff_x), linestyle="dashed",
+              colors=["green"], label="Avg negative difference")
+    ax.hlines([pos_avg], 0, max(diff_x), linestyle="dashed",
+              colors=["steelblue"], label="Avg positive difference")
+
+    ax.legend()
 
     ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath("mem_difference_bar.png"))
@@ -311,7 +343,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
                        np.arange(0, dyna_used_avg_df.shape[0]),
                        f"Memory usage on datastream with {test_type} rate",
                        ylabel="Memory (MB)",
-                       xlabel="Time period (s)",
+                       xlabel="Time",
                        ax=ax,
                        )
     ax.set_xticklabels([])
@@ -324,7 +356,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
                        np.arange(0, tumb_used_avg_df.shape[0]),
                        f"Memory usage on datastream with {test_type} rate",
                        ylabel="Memory (MB)",
-                       xlabel="Time period (s)",
+                       xlabel="Time",
                        ax=ax,
                        )
 
@@ -342,9 +374,10 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
                        np.arange(0, cpu_df.shape[0]),
                        f"CPU usage on datastream with {test_type} rate",
                        ylabel="CPU (percentage)",
-                       xlabel="Time period (s)",
+                       xlabel="Time",
                        ax=ax)
 
+    ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath("cpu_comparison.png"))
     plt.close()
 
