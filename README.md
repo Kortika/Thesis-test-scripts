@@ -9,8 +9,12 @@ We will call the script from the root folder of this repo.
 
 # Step 1 
 
-Start the docker setup script
+Start the docker setup scripts
 
-{% codeblock title lang:language URL link_text %}
-code_snippet
-{% endcodeblock %}
+
+```
+qsdfjkmlqsdjfl
+```
+
+```
+
