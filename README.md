@@ -1,6 +1,16 @@
 # Thesis-test-scripts
 
 This repository contains the scripts needed to run 
-the testing the dynamic window implementation 
-of RMLStreamer against Flink's native window implementation. 
+the evaluation of the dynamic window implementation 
+in RMLStreamer against Flink's native window implementation. 
 
+
+We will call the script from the root folder of this repo. 
+
+# Step 1 
+
+Start the docker setup script
+
+{% codeblock title lang:language URL link_text %}
+code_snippet
+{% endcodeblock %}
