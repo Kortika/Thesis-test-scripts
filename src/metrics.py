@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description='Gather metrics from Flink\'s web API')
-    parser.add_argument('--interval', type=int, default=1,
+    parser.add_argument('--interval', type=float, default=0.1,
                         required=False,
                         help='Interval in seconds to gather the metrics from api. ')
     parser.add_argument('output', type=str,

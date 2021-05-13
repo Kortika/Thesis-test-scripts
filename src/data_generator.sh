@@ -68,7 +68,7 @@ IP_ADDR=$(hostname -I | head -n1 | awk '{print $1}')
 export S3_ACCESS_KEY=xxx # S3 access key of data input
 export S3_SECRET_KEY=xxx # S3 secret key of data input
 export KAFKA_BOOTSTRAP_SERVERS=$IP_ADDR:9092  # list of Kafka brokers in the form of "host1:port1,host2:port2"
-export DATA_VOLUME=6 # inflation factor for the data
+export DATA_VOLUME=3 # inflation factor for the data
 
 #possible modes:    constant-rate
 #                   single-burst

@@ -299,10 +299,14 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
 
     pos_avg = pos_avg.sum()/pos_avg.shape[0]
 
+    total_avg = diff_df.sum() / diff_df.shape[0]
+
     ax.hlines([neg_avg], 0, max(diff_x), linestyle="dashed",
               colors=["green"], label="Avg negative difference")
     ax.hlines([pos_avg], 0, max(diff_x), linestyle="dashed",
               colors=["steelblue"], label="Avg positive difference")
+    ax.hlines([total_avg], 0, max(diff_x), linestyle="dashdot",
+              colors=["yellow"], label="Avg difference")
 
     ax.legend()
 
