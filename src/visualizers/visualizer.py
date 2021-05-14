@@ -58,6 +58,16 @@ def draw_boxplot_ax(data: pd.DataFrame,
                         labels=labels)  # will be used to label x-ticks
     ax.set_title(title)
 
+    for key in ["whiskers", "medians", "caps"]:
+        for line in bplot2[key]:
+            (_, y), (xr, _) = line.get_xydata()
+            if key == "whiskers":
+                xr = xr + 0.04
+            xr = xr + 0.05
+            ax.text(xr, y, "%3.f" % y,
+                    verticalalignment="center",
+                    fontsize=12)
+
     # fill with colors
     if len(data.columns) > 1:
         colors = ['pink', 'lightblue', 'lightgreen']
@@ -247,9 +257,10 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
                        np.arange(0, throughput_df.shape[0]),
                        "",
                        ylabel="Throughput (records/s)",
-                       xlabel="Time (s)",
+                       xlabel="Time",
                        ax=ax)
 
+    ax.set_xticklabels([])
     plt.savefig(output_dir.joinpath("throughput_comparison.png"))
     plt.close()
 
@@ -371,7 +382,7 @@ def visualize_jvm_stats(dyn_task: m_parser.DFConsolidator,
     dyn_cpu_df = dyn_task.get_columns(metric="CPU.Load_avg")
     tumb_cpu_df = tumb_task.get_columns(metric="CPU.Load_avg")
 
-    cpu_df = pd.concat([dyn_cpu_df, tumb_cpu_df], axis=1)
+    cpu_df = pd.concat([dyn_cpu_df[100:], tumb_cpu_df[100:]], axis=1)
     cpu_df.columns = ["Dynamic Window", "Tumbling"]
     ax = plt.subplot(111)
     ax = draw_lineplot(cpu_df,
