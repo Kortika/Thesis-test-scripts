@@ -243,10 +243,15 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
                          output_dir: Path,
                          test_type: TestType):
 
-    dyn_out_avg = dyn_vert.get_columns(metric="RecordsOutPerSecond_avg")
-    tumb_vert_avg = tumb_vert.get_columns(metric="RecordsOutPerSecond_avg")
+    parallelism = 4
+    throughput_divider = 1000
+    dyn_out_avg = dyn_vert.get_columns(
+        metric="RecordsOutPerSecond_avg")/throughput_divider
+    tumb_vert_avg = tumb_vert.get_columns(
+        metric="RecordsOutPerSecond_avg")/throughput_divider
 
-    throughput_df = pd.concat([dyn_out_avg, tumb_vert_avg], axis=1)
+    throughput_df = pd.concat(
+        [dyn_out_avg * parallelism, tumb_vert_avg * parallelism], axis=1)
     throughput_df = throughput_df.fillna(0)
     throughput_df = throughput_df[100::]
 
@@ -256,7 +261,7 @@ def visualize_throughput(dyn_vert: m_parser.DFConsolidator,
     ax = draw_lineplot(throughput_df,
                        np.arange(0, throughput_df.shape[0]),
                        "",
-                       ylabel="Throughput (records/s)",
+                       ylabel="Throughput (x1000 records/s)",
                        xlabel="Time",
                        ax=ax)
 
