@@ -23,7 +23,7 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
 
 
 <JoinConfigMap> a rmls:JoinConfigMap;
-        rmls:joinType rmls:VCTWindowJoin.
+        rmls:joinType rmls:DynamicWindowJoin.
 
 
 <NDWSpeedMap>
@@ -45,7 +45,7 @@ _:kafka_source_ndwFlow a rmls:KafkaStream ;
     rr:objectMap [
       rr:parentTriplesMap <NDWFlowMap>;
       rmls:joinConfig <JoinConfigMap>;
-      rmls:windowType  rmls:VCTWindow;
+      rmls:windowType  rmls:DynamicWindow;
       rr:joinCondition [
         rr:child "internalId,lat,long,timestamp" ;
         rr:parent "internalId,lat,long,timestamp" ;
